@@ -42,9 +42,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Downloads\Tshock api 1.17\ServerPlugins\TShockAPI.dll</HintPath>
     </Reference>
-    <Reference Include="Wolfje.Plugins.SEconomy">
-      <HintPath>..\..\..\..\..\Downloads\Wolfje Plugins\Wolfje.Plugins.SEconomy.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
