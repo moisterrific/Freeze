@@ -1,23 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.IO;
-using System.Data;
-using System.Text;
 using TShockAPI;
 using Terraria;
+using System.Timers;
 using TerrariaApi.Server;
 
-namespace AIO
+namespace Freeze
 {
     [ApiVersion(1, 17)]
-    public class AIO : TerrariaPlugin
+    public class Freeze : TerrariaPlugin
     {
+        Timer timer = new Timer(1000) { Enabled = true };
         List<string> frozenplayer = new List<string>();
-        public List<string> staffchatplayers = new List<string>();
-
-        Color staffchatcolor = new Color(200, 50, 150);
-        DateTime LastCheck = DateTime.UtcNow;
 
         public override Version Version
         {
@@ -29,58 +24,49 @@ namespace AIO
         }
         public override string Name
         {
-            get { return "AIO"; }
+            get { return "Freeze"; }
         }
 
         public override string Description
         {
-            get { return "all-in-one plugin, now compatible with infinite chests!"; }
+            get { return "Allows you to freeze players on the spot"; }
         }
 
         public override void Initialize()
         {
-            ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
-            Commands.ChatCommands.Add(new Command("aio.freeze", freeze, "freeze"));
+            timer.Elapsed += timer_Elapsed;
+            Commands.ChatCommands.Add(new Command("freeze.use", freeze, "freeze"));
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                ServerApi.Hooks.GameUpdate.Deregister(this, OnUpdate);
             }
             base.Dispose(disposing);
         }
 
-        public AIO(Main game)
+        public Freeze(Main game)
             : base(game)
         {
             Order = 1;
         }
 
-
-        public void OnUpdate(EventArgs e)
+        void timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            WorldGen.spawnMeteor = false;
-            if ((DateTime.UtcNow - LastCheck).TotalSeconds >= 3)
+            foreach (TSPlayer ts in TShock.Players)
             {
-                LastCheck = DateTime.UtcNow;
-                foreach (TSPlayer ts in TShock.Players)
+                if (ts == null)
+                    continue;
+
+                if (frozenplayer.Contains(ts.IP))
                 {
-                    if (ts != null)
-                    {
-                        if (frozenplayer.Contains(ts.IP))
-                        {
-                            ts.SetBuff(47, 240, true);
-                            ts.SetBuff(80, 240, true);
-                            ts.SetBuff(23, 240, true);
-                        }
-                    }
+                    ts.SetBuff(47, 180, true);
+                    ts.SetBuff(80, 180, true);
+                    ts.SetBuff(23, 180, true);
                 }
             }
         }
-
-
 
         public void freeze(CommandArgs args)
         {
