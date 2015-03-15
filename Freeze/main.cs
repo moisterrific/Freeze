@@ -89,7 +89,6 @@ namespace Freeze
 
             if (IsFrozen(ts, out name))
             {
-                ts.Spawn();
                 FrozenPlayers.Add(new FrozenPlayer(ts.Index, true));
                 IpNames.Remove(ts.IP);
                 if (name != ts.Name)
