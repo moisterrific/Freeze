@@ -11,8 +11,9 @@ namespace Freeze
     [ApiVersion(1, 17)]
     public class Freeze : TerrariaPlugin
     {
+        public static List<FrozenPlayer> FrozenPlayers = new List<FrozenPlayer>();
+        public static Dictionary<string, string> IpNames = new Dictionary<string, string>();
         Timer timer = new Timer(1000) { Enabled = true };
-        List<string> frozenplayer = new List<string>();
 
         public override Version Version
         {
@@ -35,6 +36,8 @@ namespace Freeze
         public override void Initialize()
         {
             timer.Elapsed += timer_Elapsed;
+            ServerApi.Hooks.ServerLeave.Register(this, OnLeave);
+            ServerApi.Hooks.ServerJoin.Register(this, OnJoin);
             Commands.ChatCommands.Add(new Command("freeze.use", freeze, "freeze"));
         }
 
@@ -52,15 +55,107 @@ namespace Freeze
             Order = 1;
         }
 
+        public static bool IsFrozen(TSPlayer ts, out string name)
+        {
+            name = null;
+            if (ts != null)
+            {
+                if (IpNames.ContainsKey(ts.IP))
+                {
+                    name = IpNames[ts.IP];
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void OnLeave(LeaveEventArgs e)
+        {
+            TSPlayer ts = TShock.Players[e.Who];
+            int i = FrozenPlayers.FindIndex(f => f.Index == e.Who);
+            if (i >= 0)
+            {
+                if (!IpNames.ContainsKey(ts.IP))
+                    IpNames.Add(ts.IP, ts.Name);
+
+                FrozenPlayers.RemoveAt(i);
+            }
+        }
+
+        public void OnJoin(JoinEventArgs e)
+        {
+            string name;
+            TSPlayer ts = TShock.Players[e.Who];
+
+            if (IsFrozen(ts, out name))
+            {
+                ts.Spawn();
+                FrozenPlayers.Add(new FrozenPlayer(ts.Index, true));
+                IpNames.Remove(ts.IP);
+                if (name != ts.Name)
+                {
+                    foreach (TSPlayer tsplr in TShock.Players)
+                    {
+                        if (tsplr == null)
+                            continue;
+
+                        if (tsplr.Group.HasPermission("freeze.use"))
+                        {
+                            TShock.Log.ConsoleInfo(string.Format("{0} a.k.a ({1}) has been re-frozen", ts.Name, name));
+                            tsplr.SendSuccessMessage(string.Format("{0} a.k.a ({1}) has been re-frozen", ts.Name, name));
+                        }
+                    }
+                }
+            }
+        }
+
         void timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            foreach (TSPlayer ts in TShock.Players)
+            foreach (FrozenPlayer fp in FrozenPlayers)
             {
-                if (ts == null)
+                if (fp == null)
                     continue;
 
-                if (frozenplayer.Contains(ts.IP))
-                    ts.Disable("Manually frozen with command", false);
+                fp.TSPlayer.SetBuff(47, 180, true);
+                fp.TSPlayer.SetBuff(80, 180, true);
+                fp.TSPlayer.SetBuff(23, 180, true);
+                fp.TSPlayer.SetBuff(32, 180, true);
+
+                if (fp.HasMoved())
+                    fp.TSPlayer.Teleport(fp.LastTileX * 16, fp.LastTileY * 16);
+
+                else
+                {
+                    fp.LastTileX = fp.TSPlayer.TileX;
+                    fp.LastTileY = fp.TSPlayer.TileY;
+                }
+            }
+        }
+
+        public class FrozenPlayer
+        {
+            public int Index { get; set; }
+            public TSPlayer TSPlayer { get { return TShock.Players[Index]; } }
+            public float LastTileX { get; set; }
+            public float LastTileY { get; set; }
+            public bool HasMoved()
+            {
+                return (Math.Abs(LastTileX - TSPlayer.TileX) + Math.Abs(LastTileY - TSPlayer.TileY)) > 1;
+            }
+            
+            public FrozenPlayer(int index, bool spawn = false)
+            {
+                Index = index;
+                if (spawn)
+                {
+                    LastTileX = Main.spawnTileX;
+                    LastTileY = Main.spawnTileY - 3;
+                }
+                else
+                {
+                    LastTileX = TSPlayer.TileX;
+                    LastTileY = TSPlayer.TileY;
+                }
             }
         }
 
@@ -85,15 +180,15 @@ namespace Freeze
                     return;
                 }
                 var plr = foundplr[0];
-                if (!frozenplayer.Contains(plr.IP))
+                if (FrozenPlayers.FindIndex(p => p.Index == plr.Index) < 0)
                 {
-                    frozenplayer.Add(plr.IP);
+                    FrozenPlayers.Add(new FrozenPlayer(plr.Index));
                     TSPlayer.All.SendInfoMessage(string.Format("{0} froze {1}", args.Player.Name, plr.Name));
                     return;
                 }
                 else
                 {
-                    frozenplayer.Remove(plr.IP);
+                    FrozenPlayers.RemoveAll(p => p.Index == plr.Index);
                     TSPlayer.All.SendInfoMessage(string.Format("{0} unfroze {1}", args.Player.Name, plr.Name));
                     return;
                 }
