@@ -60,11 +60,7 @@ namespace Freeze
                     continue;
 
                 if (frozenplayer.Contains(ts.IP))
-                {
-                    ts.SetBuff(47, 180, true);
-                    ts.SetBuff(80, 180, true);
-                    ts.SetBuff(23, 180, true);
-                }
+                    ts.Disable("Manually frozen with command", false);
             }
         }
 
