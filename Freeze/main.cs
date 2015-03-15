@@ -60,7 +60,7 @@ namespace Freeze
                     continue;
 
                 if (frozenplayer.Contains(ts.IP))
-                    frozenplayer.Disable("Manually frozen with command", false)
+                    ts.Disable("Manually frozen with command", false);
             }
         }
 
