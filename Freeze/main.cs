@@ -115,10 +115,10 @@ namespace Freeze
                 if (fp == null)
                     continue;
 
-                fp.TSPlayer.SetBuff(47, 180, true);
-                fp.TSPlayer.SetBuff(80, 180, true);
-                fp.TSPlayer.SetBuff(23, 180, true);
-                fp.TSPlayer.SetBuff(32, 180, true);
+                fp.TSPlayer.SetBuff(47, 180, true); //frozen debuff (Can't move)
+                fp.TSPlayer.SetBuff(156, 180, true); //stoned debuff (Can't move)
+                fp.TSPlayer.SetBuff(149, 180, true); //webbed debuff (Can't move)
+                fp.TSPlayer.SetBuff(163, 180, true); //obstructed debuff (Complete darkness)
 
                 if (fp.HasMoved())
                     fp.TSPlayer.Teleport(fp.LastTileX * 16, fp.LastTileY * 16);
