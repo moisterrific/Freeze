@@ -8,7 +8,7 @@ using TerrariaApi.Server;
 
 namespace Freeze
 {
-    [ApiVersion(1, 19)]
+    [ApiVersion(1, 20)]
     public class Freeze : TerrariaPlugin
     {
         public static List<FrozenPlayer> FrozenPlayers = new List<FrozenPlayer>();
