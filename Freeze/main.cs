@@ -8,7 +8,7 @@ using TerrariaApi.Server;
 
 namespace Freeze
 {
-	[ApiVersion(2, 0)]
+	[ApiVersion(2, 1)]
 	public class Freeze : TerrariaPlugin
 	{
 		public static List<FrozenPlayer> FrozenPlayers = new List<FrozenPlayer>();
@@ -166,7 +166,7 @@ namespace Freeze
 					args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /freeze [player]");
 					return;
 				}
-				var foundplr = TShock.Utils.FindPlayer(args.Parameters[0]);
+				var foundplr = TSPlayer.FindByNameOrID(args.Parameters[0]);
 				if (foundplr.Count == 0)
 				{
 					args.Player.SendErrorMessage("Invalid player!");
